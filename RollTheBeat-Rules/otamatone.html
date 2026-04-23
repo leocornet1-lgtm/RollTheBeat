@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Otamatone Pro</title>
+<script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+
+<style>
+  body {
+    background: #1a1a1a;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+  }
+
+  #pad {
+    width: 160px;
+    height: 420px;
+    margin: 30px auto;
+    background: linear-gradient(to bottom, #aaa, #333);
+    border-radius: 25px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #face {
+    width: 160px;
+    margin: auto;
+  }
+
+  #mouthCanvas {
+    margin-top: 10px;
+    background: #111;
+    border-radius: 50%;
+  }
+
+  label {
+    display: block;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Otamatone Pro 🎶</h1>
+<button onclick="startAudio()">Activer le son</button>
+
+<div id="pad"></div>
+
+<canvas id="mouthCanvas" width="120" height="120"></canvas>
+
+<label>Vibrato</label>
+<input type="range" id="vibratoDepth" min="0" max="50" value="10">
+
+<script>
+let osc, gain, filter, vibrato;
+let isPlaying = false;
+
+function startAudio() {
+  Tone.start();
+
+  gain = new Tone.Gain(0).toDestination();
+
+  filter = new Tone.Filter({
+    type: "bandpass",
+    frequency: 1000,
+    Q: 5
+  }).connect(gain);
+
+  osc = new Tone.Oscillator({
+    type: "sawtooth",
+    frequency: 300
+  }).connect(filter);
+
+  // vibrato = LFO sur fréquence
+  vibrato = new Tone.LFO({
+    frequency: 5,
+    min: -10,
+    max: 10
+  }).start();
+
+  vibrato.connect(osc.frequency);
+
+  osc.start();
+}
+
+// zone de jeu
+const pad = document.getElementById("pad");
+const canvas = document.getElementById("mouthCanvas");
+const ctx = canvas.getContext("2d");
+
+pad.addEventListener("mousedown", (e) => {
+  isPlaying = true;
+  gain.gain.rampTo(0.3, 0.05);
+  update(e);
+});
+
+document.addEventListener("mouseup", () => {
+  isPlaying = false;
+  gain.gain.rampTo(0, 0.1);
+});
+
+pad.addEventListener("mousemove", (e) => {
+  if (isPlaying) update(e);
+});
+
+function update(e) {
+  const rect = pad.getBoundingClientRect();
+  const y = e.clientY - rect.top;
+
+  const percent = y / rect.height; 
+  // 🔥 inversé : bas = aigu
+  const freq = 200 + (1 - percent) * 1000;
+
+  osc.frequency.rampTo(freq, 0.05);
+
+  // bouche dépend du pitch
+  drawMouth(percent);
+
+  // filtre suit légèrement
+  filter.frequency.value = 500 + (1 - percent) * 2000;
+}
+
+// vibrato control
+const vibSlider = document.getElementById("vibratoDepth");
+vibSlider.addEventListener("input", () => {
+  const depth = vibSlider.value;
+  vibrato.min = -depth;
+  vibrato.max = depth;
+});
+
+// bouche dessin
+function drawMouth(amount) {
+  ctx.clearRect(0, 0, 120, 120);
+
+  const open = 10 + amount * 40;
+
+  ctx.beginPath();
+  ctx.ellipse(60, 60, 30, open, 0, 0, Math.PI * 2);
+  ctx.fillStyle = "#ff4081";
+  ctx.fill();
+}
+
+// initial
+drawMouth(0.5);
+</script>
+
+</body>
+</html>
