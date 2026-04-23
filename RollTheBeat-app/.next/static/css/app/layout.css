@@ -1,0 +1,133 @@
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/styles/globals.css ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
+:root {
+  color-scheme: dark;
+  --bg: #080a11;
+  --surface: #111827;
+  --surface2: #1f2937;
+  --border: #374151;
+  --text: #f6f4ff;
+  --muted: #9ca3af;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #facc15;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; min-height: 100vh; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; border: none; outline: none; }
+
+.screen { max-width: 640px; margin: 0 auto; padding: 24px 16px; display: flex; flex-direction: column; gap: 16px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.card-highlight { background: var(--surface2); border-color: var(--primary); }
+
+.title { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 8px; }
+.subtitle { color: var(--muted); font-size: 0.95rem; }
+.section-title { font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+.label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; display: block; }
+.value { font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+.player-name { font-size: 1.2rem; font-weight: 700; }
+.timer { font-size: 3.5rem; font-weight: 900; margin: 8px 0; transition: color 0.3s; }
+
+.input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 1rem; margin-top: 6px; outline: none; transition: border-color 0.2s; }
+.input:focus { border-color: var(--primary); }
+.input::-moz-placeholder { color: var(--muted); }
+.input::placeholder { color: var(--muted); }
+
+.tab-row { display: flex; gap: 8px; }
+.tab-btn { flex: 1; padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; background: var(--surface); border: 1px solid var(--border); color: var(--muted); transition: all 0.15s; }
+.tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+.actions { display: flex; flex-direction: column; gap: 10px; }
+.btn { padding: 12px 20px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; transition: opacity 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-joker { background: var(--surface2); color: var(--text); border: 1px solid var(--border); font-size: 0.85rem; padding: 8px 12px; }
+
+.joker-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.player-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.player-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface2); border-radius: 8px; }
+.badge { background: var(--primary); color: white; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; }
+.score { color: var(--warning); font-weight: 700; }
+
+.song-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.song-item { padding: 8px 12px; background: var(--surface2); border-radius: 8px; font-size: 0.9rem; }
+
+.ranking-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.ranking-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface2); border-radius: 8px; }
+.ranking-item.first { border: 1px solid var(--warning); }
+.rank { font-weight: 900; color: var(--muted); min-width: 28px; }
+.name { flex: 1; font-weight: 600; }
+
+.history-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.history-item { font-size: 0.85rem; color: var(--muted); padding: 6px 10px; background: var(--surface2); border-radius: 6px; }
+
+/*!********************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/styles/catalog.css ***!
+  \********************************************************************************************************************************************************************************************************************************************************************/
+.list-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.list-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.list-btn:hover { border-color: var(--primary); }
+.list-btn.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 15%, var(--surface2)); }
+
+.list-emoji { font-size: 1.4rem; }
+.list-label { font-size: 0.85rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+.list-count { font-size: 0.75rem; color: var(--muted); }
+
+.instrument-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.instr-btn {
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 2px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.instr-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--text); }
+.instr-btn.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 20%, var(--surface2)); color: var(--text); }
+.instr-btn.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/*!************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./src/styles/collapsible.css ***!
+  \************************************************************************************************************************************************************************************************************************************************************************/
+.collapsible-header { display:flex; justify-content:space-between; align-items:center; width:100%; background:transparent; color:var(--text); padding:0; cursor:pointer; border:none; }
+.scroll-box { max-height: 260px; overflow-y: auto; padding-right: 6px; }
+
