@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Piano 2 octaves - Tone.js</title>
+  <script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+      background: #222;
+      color: white;
+    }
+    .keyboard {
+      display: flex;
+      justify-content: center;
+      margin-top: 50px;
+      position: relative;
+    }
+    .key {
+      border: 1px solid black;
+      cursor: pointer;
+      user-select: none;
+    }
+    .white {
+      width: 50px;
+      height: 200px;
+      background: white;
+      color: black;
+      z-index: 1;
+    }
+    .black {
+      width: 30px;
+      height: 120px;
+      background: black;
+      position: absolute;
+      z-index: 2;
+      margin-left: -15px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Piano 2 Octaves (C4 → B5)</h1>
+<button onclick="startAudio()">Activer le son</button>
+
+<div class="keyboard" id="keyboard"></div>
+
+<script>
+const synth = new Tone.Synth().toDestination();
+
+const notes = [
+  "C4","C#4","D4","D#4","E4","F4","F#4","G4","G#4","A4","A#4","B4",
+  "C5","C#5","D5","D#5","E5","F5","F#5","G5","G#5","A5","A#5","B5"
+];
+
+function startAudio() {
+  Tone.start();
+  alert("Audio activé !");
+}
+
+const keyboard = document.getElementById("keyboard");
+
+notes.forEach((note, i) => {
+  const isSharp = note.includes("#");
+
+  const key = document.createElement("div");
+  key.className = "key " + (isSharp ? "black" : "white");
+
+  key.style.left = (i * 50) + "px";
+
+  key.onmousedown = () => synth.triggerAttackRelease(note, "8n");
+
+  keyboard.appendChild(key);
+});
+</script>
+
+</body>
+</html>

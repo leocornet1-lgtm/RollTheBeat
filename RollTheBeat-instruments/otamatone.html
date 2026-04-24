@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Otamatone Virtuel Interactif</title>
+<script src="https://unpkg.com/tone@14.7.77/build/Tone.js"></script>
+
+<style>
+  body { background: #222; color: white; display: flex; flex-direction: column; align-items: center; font-family: sans-serif; }
+  
+  /* Conteneur principal */
+  #instrument { display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
+
+  /* Le manche */
+  #neck {
+    width: 60px;
+    height: 300px;
+    background: #333;
+    border-radius: 10px 10px 0 0;
+    cursor: crosshair;
+    touch-action: none;
+    border: 4px solid #000;
+  }
+
+  /* La tête */
+  #head {
+    width: 120px;
+    height: 120px;
+    background: #111;
+    border-radius: 50%;
+    margin-top: -10px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 4px solid #000;
+  }
+
+  .eye { width: 15px; height: 15px; background: white; border-radius: 50%; margin: 0 10px; }
+
+  /* La bouche qui s'ouvre */
+  #mouth-line {
+    position: absolute;
+    bottom: 25px;
+    width: 60px;
+    height: 5px;
+    background: #ff5555;
+    transition: transform 0.1s ease;
+    transform-origin: center;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>Otamatone Virtuel 🎶</h1>
+<button onclick="startAudio()" style="padding: 10px 20px; cursor: pointer;">Activer le son</button>
+<p>Utilisez le manche : <b>Haut/Bas</b> (Hauteur), <b>Gauche/Droite</b> (Bouche)</p>
+
+<div id="instrument">
+  <div id="neck"></div>
+  <div id="head">
+    <div class="eye"></div><div class="eye"></div>
+    <div id="mouth-line"></div>
+  </div>
+</div>
+
+<script>
+let synth, filter;
+const neck = document.getElementById("neck");
+const mouthLine = document.getElementById("mouth-line");
+
+function startAudio() {
+  Tone.start();
+  // Filtre pour la résonance "bouche"
+  filter = new Tone.Filter(800, "lowpass").toDestination();
+  synth = new Tone.Oscillator({ type: "sawtooth", frequency: 440 }).connect(filter);
+  synth.start();
+  synth.volume.value = -Infinity; // Silencieux par défaut
+}
+
+// Logique d'interaction
+let isPlaying = false;
+
+function handleInteraction(e) {
+  if (!synth) return;
+  
+  const rect = neck.getBoundingClientRect();
+  // Coordonnées relatives au rectangle
+  const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+  const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+  
+  const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+  const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
+
+  // 1. Calcul hauteur (Graves en haut = 0, Aigus en bas = 1)
+  const percentY = y / rect.height;
+  const freq = 200 + percentY * 1000; // 200Hz à 1200Hz
+  synth.frequency.rampTo(freq, 0.05);
+
+  // 2. Calcul ouverture bouche (Gauche = 0, Droite = 1)
+  const percentX = x / rect.width;
+  const filterFreq = 300 + percentX * 2000; // Filtre entre 300Hz et 2300Hz
+  filter.frequency.rampTo(filterFreq, 0.05);
+  
+  // Animation visuelle bouche
+  const scale = 0.5 + percentX * 2; // S'étire de 0.5 à 2.5
+  mouthLine.style.transform = `scaleX(${scale})`;
+
+  synth.volume.value = -10;
+}
+
+neck.addEventListener("mousedown", (e) => { isPlaying = true; handleInteraction(e); });
+window.addEventListener("mousemove", (e) => { if (isPlaying) handleInteraction(e); });
+window.addEventListener("mouseup", () => { 
+  if(isPlaying) {
+    isPlaying = false; 
+    synth.volume.value = -Infinity; 
+    mouthLine.style.transform = `scaleX(1)`;
+  }
+});
+
+// Support tactile
+neck.addEventListener("touchstart", (e) => { isPlaying = true; handleInteraction(e); });
+neck.addEventListener("touchmove", (e) => { if(isPlaying) handleInteraction(e); });
+neck.addEventListener("touchend", () => { isPlaying = false; synth.volume.value = -Infinity; });
+</script>
+
+</body>
+</html>
