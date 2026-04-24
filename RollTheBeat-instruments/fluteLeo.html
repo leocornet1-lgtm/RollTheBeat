@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Flûte à coulisse améliorée</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background: #1a1a1a;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* Conteneur principal */
+    #container {
+      margin-top: 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      touch-action: none; /* Empêche le scroll mobile lors du jeu */
+    }
+
+    #flute {
+      width: 60px;
+      height: 300px;
+      background: linear-gradient(90deg, #b8860b, #daa520, #b8860b);
+      border-radius: 10px 10px 0 0;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* La tige qui sort par le bas */
+    #rod-container {
+      width: 20px;
+      height: 200px; /* Espace où la tige peut coulisser */
+      background: transparent;
+      margin-top: -2px; /* Connecté au bas de la flûte */
+      position: relative;
+      cursor: ns-resize;
+    }
+
+    #rod {
+      width: 10px;
+      height: 100%;
+      background: #ccc;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #handle {
+      width: 40px;
+      height: 20px;
+      background: #ff4757;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 0; /* Position de départ (rentré) */
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+
+<h1>🎶 Flûte à Coulisse</h1>
+<p>Cliquez/Glissez sur la <strong>poignée rouge</strong> pour jouer.</p>
+<p><small>(Maintiens ESPACE pour activer le son)</small></p>
+
+<div id="container">
+  <div id="flute"></div>
+  <div id="rod-container" id="interaction-area">
+    <div id="rod">
+      <div id="handle"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const handle = document.getElementById("handle");
+  const rodContainer = document.getElementById("rod-container");
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  
+  // Création d'un buffer de bruit pour le souffle
+  const bufferSize = audioCtx.sampleRate * 2;
+  const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+  let oscillator, gainNode, filter, noiseSource, noiseGain, isPlaying = false, dragging = false, frequency = 440;
+
+  function startSound() {
+    if (isPlaying) return;
+
+    // --- OSCILLATEUR (Le son de base) ---
+    oscillator = audioCtx.createOscillator();
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+    // --- BRUIT (Le souffle) ---
+    noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    noiseSource.loop = true;
+    
+    // Filtre pour rendre le bruit plus "aérien" et moins "TV statique"
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = "highpass";
+    noiseFilter.frequency.setValueAtTime(3000, audioCtx.currentTime);
+    noiseSource.connect(noiseFilter);
+
+    noiseGain = audioCtx.createGain();
+    noiseFilter.connect(noiseGain);
+
+    // --- FILTRE GLOBAL (Chaleur) ---
+    filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    filter.Q.setValueAtTime(5, audioCtx.currentTime); // Résonance douce
+
+    gainNode = audioCtx.createGain();
+
+    // Connexions
+    oscillator.connect(filter);
+    filter.connect(gainNode);
+    noiseGain.connect(gainNode); // Mixage du souffle
+    gainNode.connect(audioCtx.destination);
+
+    // Enveloppe d'attaque (le "Chiff")
+    const now = audioCtx.currentTime;
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.3, now + 0.05); // Attaque rapide
+    
+    noiseGain.gain.setValueAtTime(0.1, now); // Souffle présent au départ
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2); // Le souffle s'estompe
+
+    oscillator.start();
+    noiseSource.start();
+    isPlaying = true;
+  }
+
+  function stopSound() {
+    if (!isPlaying) return;
+    const now = audioCtx.currentTime;
+    gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    setTimeout(() => {
+      oscillator.stop();
+      noiseSource.stop();
+      oscillator.disconnect();
+      isPlaying = false;
+    }, 100);
+  }
+
+  // Fonctions de contrôle inchangées
+  function updateHandle(y) {
+    const rect = rodContainer.getBoundingClientRect();
+    let pos = y - rect.top;
+    pos = Math.max(0, Math.min(pos, rect.height));
+    handle.style.top = pos + "px";
+    frequency = 800 - (pos / rect.height) * 600;
+    if (oscillator) oscillator.frequency.setTargetAtTime(frequency, audioCtx.currentTime, 0.05);
+  }
+
+  rodContainer.addEventListener("mousedown", (e) => { dragging = true; updateHandle(e.clientY); });
+  window.addEventListener("mousemove", (e) => { if (dragging) updateHandle(e.clientY); });
+  window.addEventListener("mouseup", () => { dragging = false; });
+  window.addEventListener("keydown", (e) => { if (e.code === "Space") startSound(); });
+  window.addEventListener("keyup", (e) => { if (e.code === "Space") stopSound(); });
+</script>
+
+</body>
+</html>
