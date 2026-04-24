@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drum Kit Pro - Vue de Dessus</title>
+
+<style>
+body {
+    margin: 0;
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* CONTENEUR */
+#drumkit {
+    position: relative;
+    width: 90vw;
+    max-width: 800px;
+    aspect-ratio: 1.25 / 1; /* Ratio basé sur l'image */
+    background: url('https://cdn.discordapp.com/attachments/1497272764401319937/1497295870222270614/vue-dessus-du-kit-batterie-illustration-vectorielle_646737-1324.png?ex=69ed00f1&is=69ebaf71&hm=1e7701547ec02f1c7cbb259028d01e2f55259ccbce36a9bbac90a844fdb21dd9&') no-repeat center center;
+    background-size: contain;
+}
+
+/* ZONES INVISIBLES */
+.zone {
+    position: absolute;
+    border-radius: 50%;
+    cursor: pointer;
+    background: rgba(255,255,255,0); /* Invisible par défaut */
+    transition: background 0.1s;
+}
+
+/* Effet visuel au clic */
+.zone.active {
+    background: rgba(255,255,255,0.3);
+}
+
+/* POSITIONNEMENT AJUSTÉ À L'IMAGE */
+#hihat  { top: 45%; left: 11%; width: 18%; height: 22%; } /* Cymbales gauche */
+#crash  { top: 18%; left: 20%; width: 22%; height: 28%; } 
+#snare  { top: 52%; left: 26%; width: 22%; height: 28%; } /* Caisse claire */
+#tom1   { top: 35%; left: 38%; width: 15%; height: 20%; } /* Petit tom */
+#tom2   { top: 33%; left: 54%; width: 18%; height: 24%; } /* Moyen tom */
+#ride   { top: 15%; left: 63%; width: 24%; height: 30%; } /* Grande cymbale */
+#floor  { top: 49%; left: 62%; width: 28%; height: 32%; } /* Tom basse */
+#kick   { top: 25%; left: 40%; width: 25%; height: 15%; } /* Grosse caisse (centre haut) */
+
+</style>
+</head>
+
+<body>
+
+<div id="drumkit">
+    <div id="hihat" class="zone"></div>
+    <div id="crash" class="zone"></div>
+    <div id="snare" class="zone"></div>
+    <div id="tom1" class="zone"></div>
+    <div id="tom2" class="zone"></div>
+    <div id="ride" class="zone"></div>
+    <div id="floor" class="zone"></div>
+    <div id="kick" class="zone"></div>
+</div>
+
+<script>
+const sounds = {
+    kick: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_5c4c2d63d3.mp3",
+    snare: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_89d2a9c33b.mp3",
+    hihat: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_34b46c9f5b.mp3",
+    tom1: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_1fbe8e7b5d.mp3",
+    tom2: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_5db4dc2621.mp3",
+    floor: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_5db4dc2621.mp3",
+    crash: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_20c78c4c7e.mp3",
+    ride: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_3caa3f4d3e.mp3"
+};
+
+function play(name, el) {
+    if(!el) return;
+    const audio = new Audio(sounds[name]);
+    audio.currentTime = 0;
+    audio.play();
+
+    el.classList.add("active");
+    setTimeout(() => el.classList.remove("active"), 100);
+}
+
+// INTERACTION SOURIS & TACTILE
+document.querySelectorAll(".zone").forEach(zone => {
+    const id = zone.id;
+    zone.addEventListener("mousedown", (e) => { e.preventDefault(); play(id, zone); });
+    zone.addEventListener("touchstart", (e) => { e.preventDefault(); play(id, zone); });
+});
+
+// CLAVIER
+document.addEventListener("keydown", (e) => {
+    if (e.repeat) return;
+    const map = {
+        " ": "kick",
+        "s": "snare",
+        "h": "hihat",
+        "t": "tom1",
+        "y": "tom2",
+        "f": "floor",
+        "c": "crash",
+        "r": "ride"
+    };
+    const key = e.key.toLowerCase();
+    if (map[key]) {
+        play(map[key], document.getElementById(map[key]));
+    }
+});
+</script>
+
+</body>
+</html>
