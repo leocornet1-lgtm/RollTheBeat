@@ -1,0 +1,198 @@
+```html
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Flûte Virtuelle</title>
+
+<style>
+body {
+    margin: 0;
+    background: #0f0f0f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial;
+    color: #f5d38a;
+}
+
+#app {
+    width: 260px;
+    height: 520px;
+    background: linear-gradient(145deg, #1c1c1c, #0a0a0a);
+    border-radius: 25px;
+    box-shadow: 0 0 30px rgba(255,180,0,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+h2 {
+    text-align: center;
+    font-size: 16px;
+    margin-top: 15px;
+}
+
+#flute {
+    position: absolute;
+    width: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 50px;
+    transition: 0.05s;
+}
+
+.slider {
+    position: absolute;
+    width: 6px;
+    height: 200px;
+    background: #333;
+    border-radius: 10px;
+}
+
+#pitchSlider {
+    left: 20px;
+    bottom: 120px;
+}
+
+#vibratoSlider {
+    right: 20px;
+    bottom: 120px;
+}
+
+.knob {
+    width: 12px;
+    height: 40px;
+    background: #f5d38a;
+    border-radius: 10px;
+    position: absolute;
+    left: -3px;
+    cursor: pointer;
+}
+
+button {
+    position: absolute;
+    bottom: 10px;
+    width: 80px;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #222;
+    color: #f5d38a;
+    cursor: pointer;
+}
+
+#play { left: 10px; }
+#stop { right: 10px; }
+
+</style>
+</head>
+
+<body>
+
+<div id="app">
+    <h2>FLÛTE VIRTUELLE</h2>
+
+    <img id="flute" src="https://i.ibb.co/85fb56/image.png">
+
+    <div id="pitchSlider" class="slider">
+        <div id="pitchKnob" class="knob"></div>
+    </div>
+
+    <div id="vibratoSlider" class="slider">
+        <div id="vibratoKnob" class="knob"></div>
+    </div>
+
+    <button id="play">PLAY</button>
+    <button id="stop">STOP</button>
+</div>
+
+<script>
+let audioCtx;
+let source;
+let gainNode;
+let lfo, lfoGain;
+let sampleBuffer;
+
+const pitchKnob = document.getElementById("pitchKnob");
+const vibratoKnob = document.getElementById("vibratoKnob");
+
+// Charger un vrai son de flûte
+async function loadSample() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const response = await fetch("https://cdn.pixabay.com/download/audio/2022/03/15/audio_115b9b8b5f.mp3?filename=flute-ambient-110624.mp3");
+    const arrayBuffer = await response.arrayBuffer();
+    sampleBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+}
+
+loadSample();
+
+function playSound() {
+    if (!sampleBuffer) return;
+
+    source = audioCtx.createBufferSource();
+    gainNode = audioCtx.createGain();
+
+    source.buffer = sampleBuffer;
+    source.loop = true;
+
+    source.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    // vibrato
+    lfo = audioCtx.createOscillator();
+    lfoGain = audioCtx.createGain();
+
+    lfo.frequency.value = 5;
+    lfoGain.gain.value = 0;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(source.playbackRate);
+
+    lfo.start();
+    source.start();
+}
+
+function stopSound() {
+    if (source) {
+        source.stop();
+        source = null;
+    }
+}
+
+// Pitch (hauteur)
+let pitch = 1;
+pitchKnob.onmousedown = (e) => {
+    document.onmousemove = (e) => {
+        let y = Math.max(0, Math.min(160, e.clientY - 100));
+        pitchKnob.style.top = y + "px";
+
+        pitch = 0.5 + (y / 160) * 2;
+        if (source) source.playbackRate.value = pitch;
+
+        document.getElementById("flute").style.bottom = (50 + y) + "px";
+    };
+};
+
+document.onmouseup = () => document.onmousemove = null;
+
+// Vibrato
+vibratoKnob.onmousedown = () => {
+    document.onmousemove = (e) => {
+        let y = Math.max(0, Math.min(160, e.clientY - 100));
+        vibratoKnob.style.top = y + "px";
+
+        let vibratoAmount = y / 10;
+        if (lfoGain) lfoGain.gain.value = vibratoAmount;
+    };
+};
+
+document.getElementById("play").onclick = playSound;
+document.getElementById("stop").onclick = stopSound;
+
+</script>
+
+</body>
+</html>
+```
