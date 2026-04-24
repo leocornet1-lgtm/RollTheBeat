@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitare Virtuelle Pro - 7 Frettes</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+<style>
+:root {
+    --wood: #3d2b1f;
+    --fret: #c0c0c0;
+    --string: linear-gradient(to bottom, #eee, #999, #eee);
+}
+
+body {
+    margin: 0; background: #1a1a1a; color: white;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100vh; font-family: 'Segoe UI', Arial, sans-serif;
+    user-select: none; -webkit-user-select: none;
+}
+
+.header { text-align: center; margin-bottom: 30px; }
+.header h1 { margin: 0; color: #f1c40f; text-transform: uppercase; letter-spacing: 2px; }
+
+/* LE MANCHE */
+#guitar-neck {
+    position: relative;
+    width: 95vw; max-width: 1100px; height: 320px;
+    background: var(--wood);
+    border: 5px solid #222;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    display: flex;
+    overflow: hidden;
+}
+
+/* CORDES */
+.string {
+    position: absolute; width: 100%; height: 3px;
+    background: var(--string);
+    z-index: 5; pointer-events: none;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+}
+.string.vibrating { animation: vibrate 0.1s linear infinite; }
+
+@keyframes vibrate {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(1px); }
+    100% { transform: translateY(0); }
+}
+
+/* FRETTES */
+.fret {
+    flex: 1; border-right: 4px solid var(--fret);
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column-reverse;
+}
+.fret:first-child { background: #222; border-right: 8px solid #ddd; max-width: 60px; } /* Sillet */
+
+/* CASES (NOTE ZONES) */
+.note-cell {
+    flex: 1; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background 0.2s;
+}
+.note-cell:hover { background: rgba(255,255,255,0.05); }
+.note-cell:active { background: rgba(241, 196, 15, 0.2); }
+
+/* AFFICHAGE DES NOTES */
+.note-label {
+    font-size: 11px; font-weight: bold; color: #aaa;
+    opacity: 0; transition: opacity 0.2s;
+    background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px;
+    z-index: 10;
+}
+.note-cell:hover .note-label { opacity: 1; }
+
+/* POINTS DE REPÈRE */
+.inlay {
+    position: absolute; width: 20px; height: 20px;
+    background: #ddd; border-radius: 50%; opacity: 0.3;
+    left: 50%; top: 50%; transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Guitare Électrique Virtuelle</h1>
+    <p>Survole pour voir les notes, clique pour jouer !</p>
+</div>
+
+<div id="guitar-neck">
+    </div>
+
+<script>
+const neck = document.getElementById('guitar-neck');
+const numFrets = 8; // 0 (Sillet) + 7 frettes
+const stringNotes = ['E4', 'B3', 'G3', 'D3', 'A2', 'E2']; // Mi, Si, Sol, Ré, La, Mi
+const noteNamesFr = ["Mi", "Fa", "Fa#", "Sol", "Sol#", "La", "Sib", "La", "Si", "Do", "Do#", "Ré", "Ré#"];
+
+// 1. SON : Sampler de guitare électrique
+const synth = new Tone.Sampler({
+    urls: {
+        A2: "https://tonejs.github.io/audio/casio/A2.mp3",
+        C4: "https://tonejs.github.io/audio/casio/C4.mp3"
+    },
+    onload: () => console.log("Guitare prête !")
+}).toDestination();
+
+// Effet de légère distorsion
+const dist = new Tone.Distortion(0.1).toDestination();
+synth.connect(dist);
+
+// 2. CONSTRUCTION DU MANCHE
+// Création des cordes visuelles
+stringNotes.forEach((_, i) => {
+    const s = document.createElement('div');
+    s.className = 'string';
+    s.id = 'vis-string-' + i;
+    s.style.top = `${(i * 100/6) + 8}%`;
+    neck.appendChild(s);
+});
+
+// Création des frettes et des cellules
+for (let f = 0; f < numFrets; f++) {
+    const fretDiv = document.createElement('div');
+    fretDiv.className = 'fret';
+    
+    stringNotes.forEach((baseNote, sIdx) => {
+        const cell = document.createElement('div');
+        cell.className = 'note-cell';
+        
+        // Calcul du nom de la note (simplifié pour l'exemple)
+        const noteObj = Tone.Frequency(baseNote).transpose(f);
+        const label = document.createElement('span');
+        label.className = 'note-label';
+        label.innerText = noteObj.toNote();
+        cell.appendChild(label);
+
+        // Ajout des points (Inlays) sur frettes 3, 5, 7
+        if ((f === 3 || f === 5 || f === 7) && sIdx === 2) {
+            const dot = document.createElement('div');
+            dot.className = 'inlay';
+            cell.appendChild(dot);
+        }
+
+        // Action : Jouer la note
+        const play = (e) => {
+            e.preventDefault();
+            Tone.start();
+            synth.triggerAttackRelease(noteObj.toNote(), "2n");
+            
+            // Animation de la corde
+            const vString = document.getElementById('vis-string-' + sIdx);
+            vString.classList.add('vibrating');
+            setTimeout(() => vString.classList.remove('vibrating'), 200);
+        };
+
+        cell.addEventListener('mousedown', play);
+        cell.addEventListener('touchstart', play);
+        
+        fretDiv.appendChild(cell);
+    });
+    
+    neck.appendChild(fretDiv);
+}
+
+// 3. CLAVIER (Mapping rapide)
+const keyMap = { 'a': 0, 'z': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5 };
+document.addEventListener('keydown', (e) => {
+    const sIdx = keyMap[e.key.toLowerCase()];
+    if (sIdx !== undefined) {
+        Tone.start();
+        synth.triggerAttackRelease(stringNotes[sIdx], "2n");
+    }
+});
+</script>
+
+</body>
+</html>
